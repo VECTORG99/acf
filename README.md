@@ -1,4 +1,4 @@
-# ACF
+# ACF - Agentic Context Forger
 
 > Orchestrator skill for crafting context-rich GitHub issues and PRs that pass CI
 > on the first try. Inspired by deepwork + oracle, homedir's SDLC pipeline, and
