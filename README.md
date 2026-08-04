@@ -101,33 +101,31 @@ See [docs/COMPACTION.md](docs/COMPACTION.md) for the full research and design no
 
 ## Installation
 
-### Devin
+### Universal installer (recommended)
 
+```bash
+./install.sh /target-project              # auto-detect agent directories
+./install.sh /target-project --all        # install to all 6 supported agents
+./install.sh /target-project --agent claude  # install to a specific agent
+```
+
+Supported agents: Claude Code, Cursor, Codex CLI, OpenCode, OpenClaw, Devin.
+
+See [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) for the full compatibility
+matrix and installation paths.
+
+### Manual installation
+
+**Devin:**
 ```bash
 cp -r .devin/skills/* /target-project/.devin/skills/
 ```
 
-This copies the orchestrator (`acf/`) **and** all 8 sub-skills
-(`01-context-load/` … `08-caveman/`), so the orchestrator's delegation
-paths resolve inside the target project.
-
-### OpenCode
-
-```bash
-cp -r .devin/skills/acf /target-project/.config/opencode/skills/
-cp -r skills/* /target-project/.config/opencode/skills/
-```
-
-Copies the orchestrator from `.devin/skills/` and the 8 sub-skills from `skills/`.
-
-### Claude Code
-
+**Claude Code / Cursor / Codex / OpenCode / OpenClaw:**
 ```bash
 cp -r .devin/skills/acf /target-project/.claude/skills/
 cp -r skills/* /target-project/.claude/skills/
 ```
-
-Same as OpenCode — orchestrator plus all 8 sub-skills.
 
 ### Labels
 

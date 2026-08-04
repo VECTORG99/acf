@@ -1,0 +1,81 @@
+name: Skill Validation
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-skills:
+    name: Validate Skills
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run skill validation script
+        run: |
+          if [ -f scripts/validate-skills.sh ]; then
+            chmod +x scripts/validate-skills.sh
+            bash scripts/validate-skills.sh
+          else
+            echo "scripts/validate-skills.sh not found — skipping script run."
+          fi
+
+      - name: Validate SKILL.md YAML frontmatter
+        run: |
+          set -e
+          echo "Checking YAML frontmatter in all SKILL.md files..."
+          errors=0
+          shopt -s nullglob globstar
+          for f in **/SKILL.md; do
+            echo "  → $f"
+            if ! head -1 "$f" | grep -q '^---$'; then
+              echo "    ERROR: missing opening '---' frontmatter delimiter"
+              errors=$((errors + 1))
+              continue
+            fi
+
+            # Extract frontmatter (between first and second '---')
+            frontmatter=$(awk 'NR==1{next} /^---$/{exit} {print}' "$f")
+
+            if [ -z "$frontmatter" ]; then
+              echo "    ERROR: empty frontmatter"
+              errors=$((errors + 1))
+              continue
+            fi
+
+            # Check for required 'name' and 'description' fields
+            if ! echo "$frontmatter" | grep -qE '^name:'; then
+              echo "    ERROR: missing 'name' field"
+              errors=$((errors + 1))
+            fi
+            if ! echo "$frontmatter" | grep -qE '^description:'; then
+              echo "    ERROR: missing 'description' field"
+              errors=$((errors + 1))
+            fi
+
+            # Validate YAML parseability if python is available
+            if command -v python3 >/dev/null 2>&1; then
+              if ! printf '%s\n' "$frontmatter" | python3 -c 'import sys,yaml; yaml.safe_load(sys.stdin)' 2>/dev/null; then
+                echo "    ERROR: frontmatter is not valid YAML"
+                errors=$((errors + 1))
+              fi
+            fi
+
+            echo "    OK"
+          done
+
+          if [ "$errors" -gt 0 ]; then
+            echo "::error::$errors SKILL.md file(s) failed frontmatter validation"
+            exit 1
+          fi
+          echo "All SKILL.md files have valid YAML frontmatter."

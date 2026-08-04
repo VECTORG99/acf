@@ -11,17 +11,21 @@
 4. **docs/IDEAS.md** — Source conversation and idea mapping
 5. **docs/PROCESS.md** — Build process and decision log
 6. **docs/COMPACTION.md** — Context compaction research (Kimi CLI) and caveman mode
-7. **.devin/skills/acf/SKILL.md** — Orchestrator skill
-8. **skills/01-context-load/SKILL.md** — Phase 1: context loading (mirrored at `.devin/skills/01-context-load/`)
-9. **skills/02-stack-audit/SKILL.md** — Phase 2: stack auditing (mirrored at `.devin/skills/02-stack-audit/`)
-10. **skills/03-issue-craft/SKILL.md** — Phase 3: issue crafting (mirrored at `.devin/skills/03-issue-craft/`)
-11. **skills/04-pr-context/SKILL.md** — Phase 4: PR context building (mirrored at `.devin/skills/04-pr-context/`)
-12. **skills/05-frontend-preview/SKILL.md** — Phase 5: frontend preview (optional) (mirrored at `.devin/skills/05-frontend-preview/`)
-13. **skills/06-label-metadata/SKILL.md** — Label taxonomy (mirrored at `.devin/skills/06-label-metadata/`)
-14. **skills/07-compaction/SKILL.md** — Phase 7: context compaction (mirrored at `.devin/skills/07-compaction/`)
-15. **skills/08-caveman/SKILL.md** — Phase 8: extreme compression (mirrored at `.devin/skills/08-caveman/`)
-16. **templates/issue-contextualized.md** — Issue body template
-17. **templates/pr-contextualized.md** — PR body template
+7. **docs/COMPATIBILITY.md** — Multi-agent compatibility (agentskills.io spec)
+8. **docs/ROADMAP.md** — Product roadmap and maturity assessment
+9. **.devin/skills/acf/SKILL.md** — Orchestrator skill
+10. **skills/01-context-load/SKILL.md** — Phase 1: context loading (mirrored at `.devin/skills/01-context-load/`)
+11. **skills/02-stack-audit/SKILL.md** — Phase 2: stack auditing (mirrored at `.devin/skills/02-stack-audit/`)
+12. **skills/03-issue-craft/SKILL.md** — Phase 3: issue crafting (mirrored at `.devin/skills/03-issue-craft/`)
+13. **skills/04-pr-context/SKILL.md** — Phase 4: PR context building (mirrored at `.devin/skills/04-pr-context/`)
+14. **skills/05-frontend-preview/SKILL.md** — Phase 5: frontend preview (optional) (mirrored at `.devin/skills/05-frontend-preview/`)
+15. **skills/06-label-metadata/SKILL.md** — Label taxonomy (mirrored at `.devin/skills/06-label-metadata/`)
+16. **skills/07-compaction/SKILL.md** — Phase 7: context compaction (mirrored at `.devin/skills/07-compaction/`)
+17. **skills/08-caveman/SKILL.md** — Phase 8: extreme compression (mirrored at `.devin/skills/08-caveman/`)
+18. **templates/issue-contextualized.md** — Issue body template
+19. **templates/pr-contextualized.md** — PR body template
+20. **SECURITY.md** — Security policy
+21. **CONTRIBUTING.md** — Contributing guidelines
 
 ---
 
@@ -32,10 +36,13 @@
 | Orchestrator skill | 1 (acf) |
 | Sub-skills | 8 (context-load, stack-audit, issue-craft, pr-context, frontend-preview, label-metadata, compaction, caveman) |
 | Templates | 2 (issue, PR) |
-| Docs | 5 (ARCHITECTURE, FLOW, IDEAS, PROCESS, COMPACTION) |
-| Skill format | Devin-native (`.devin/skills/`, orchestrator + mirrored sub-skills) + portable (`skills/`) |
+| Docs | 7 (ARCHITECTURE, FLOW, IDEAS, PROCESS, COMPACTION, COMPATIBILITY, ROADMAP) |
+| Skill format | Agent Skills spec (agentskills.io) — compatible with Claude Code, Cursor, Codex CLI, OpenCode, OpenClaw, Devin |
+| Source of truth | `skills/` (portable) + `.devin/skills/` (Devin mirror) |
+| Installer | `install.sh` — auto-detect, `--all`, `--agent <name>` |
 | Dependencies | `gh` CLI, optional: Playwright (frontend-preview) |
 | Compaction | Kimi CLI-inspired (phase 7) + caveman extreme mode (phase 8) |
+| Security | SECURITY.md, CODEOWNERS, CI secret scan, skill validation CI |
 
 ---
 
@@ -124,41 +131,48 @@ See `skills/06-label-metadata/SKILL.md` for full taxonomy.
 
 ## Installation
 
-### Into a Devin project
+### Universal installer (recommended)
 
-Copy the orchestrator **and** all sub-skills into the target project's
-`.devin/skills/` directory. The repo mirrors every sub-skill under
-`.devin/skills/` so a single copy is self-contained:
+Use `install.sh` to install ACF into any project. It auto-detects which agent
+directories exist and installs to all of them:
 
+```bash
+./install.sh /target/project
+```
+
+Install to ALL supported agents (creating directories as needed):
+
+```bash
+./install.sh /target/project --all
+```
+
+Install to a specific agent only:
+
+```bash
+./install.sh /target/project --agent claude
+```
+
+Supported agents: `devin`, `claude`, `cursor`, `codex`, `agents`, `opencode`
+
+See `docs/COMPATIBILITY.md` for the full compatibility matrix.
+
+### Manual installation
+
+If you prefer to copy files manually:
+
+**Devin:**
 ```bash
 cp -r .devin/skills/* /target/project/.devin/skills/
 ```
 
-This installs `acf/` (orchestrator) plus `01-context-load/` through
-`08-caveman/` (8 sub-skills), so the orchestrator's delegation paths
-resolve inside the target project.
-
-### Into an OpenCode project
-
-Copy the orchestrator and sub-skills into the target project's skill directory:
-
-```bash
-cp -r .devin/skills/acf /target/project/.config/opencode/skills/
-cp -r skills/* /target/project/.config/opencode/skills/
-```
-
-Installs the orchestrator from `.devin/skills/` plus all 8 sub-skills from `skills/`.
-
-### Into a Claude Code project
-
-Copy into `.claude/skills/`:
-
+**Claude Code / Cursor / Codex / OpenCode / OpenClaw:**
 ```bash
 cp -r .devin/skills/acf /target/project/.claude/skills/
 cp -r skills/* /target/project/.claude/skills/
 ```
 
-Same as OpenCode — orchestrator plus all 8 sub-skills.
+(Replace `.claude/skills/` with the appropriate path for your agent — see
+`docs/COMPATIBILITY.md` for the path table.)
 
 ### Label setup
 
@@ -199,3 +213,10 @@ chore:    Build, config, tooling
 | Ideas mapping | `docs/IDEAS.md` | — |
 | Build process | `docs/PROCESS.md` | — |
 | Compaction research | `docs/COMPACTION.md` | — |
+| Multi-agent compatibility | `docs/COMPATIBILITY.md` | — |
+| Roadmap | `docs/ROADMAP.md` | — |
+| Installer | `install.sh` | — |
+| Skill validator | `scripts/validate-skills.sh` | — |
+| Security policy | `SECURITY.md` | — |
+| Contributing guide | `CONTRIBUTING.md` | — |
+| Code of conduct | `CODE_OF_CONDUCT.md` | — |

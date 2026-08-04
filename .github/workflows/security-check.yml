@@ -1,0 +1,87 @@
+name: Security Check
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  security-scan:
+    name: Secret & URL Scan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Scan for hardcoded secrets
+        run: |
+          set +e
+          echo "Scanning for common secret patterns..."
+          found=0
+
+          # Patterns: GitHub tokens, AWS keys, OpenAI keys, Slack tokens,
+          # Bearer tokens, and common password assignments.
+          patterns=(
+            'ghp_[0-9A-Za-z]\{36\}'
+            'gho_[0-9A-Za-z]\{36\}'
+            'ghu_[0-9A-Za-z]\{36\}'
+            'ghs_[0-9A-Za-z]\{36\}'
+            'ghr_[0-9A-Za-z]\{76\}'
+            'AKIA[0-9A-Z]\{16\}'
+            'sk-[0-9A-Za-z]\{20,\}'
+            'xoxb-[0-9A-Za-z-]\{10,\}'
+            'Bearer [0-9A-Za-z._-]\{20,\}'
+            '[Pp]assword[[:space:]]*[=:][[:space:]]*[''"][^''"]\{4,\}[''"]'
+            '[Ss]ecret[[:space:]]*[=:][[:space:]]*[''"][^''"]\{8,\}[''"]'
+            '[Tt]oken[[:space:]]*[=:][[:space:]]*[''"][^''"]\{8,\}[''"]'
+          )
+
+          # Only scan text files; skip the .git directory and binaries.
+          while IFS= read -r -d '' file; do
+            for pat in "${patterns[@]}"; do
+              if grep -rnE "$pat" "$file" 2>/dev/null; then
+                found=1
+              fi
+            done
+          done < <(git ls-files -z -- '*.md' '*.yml' '*.yaml' '*.sh' '*.txt' '*.json' '*.toml' '*.ini' '*.cfg' '*.env' '*.js' '*.ts' '*.py' '*.luau' '*.lua')
+
+          if [ "$found" -ne 0 ]; then
+            echo "::error::Hardcoded secrets detected in the repository."
+            exit 1
+          fi
+          echo "No hardcoded secrets found."
+
+      - name: Check SKILL.md for non-documentation URLs
+        run: |
+          set +e
+          echo "Checking SKILL.md files for non-documentation URLs..."
+          errors=0
+          shopt -s nullglob globstar
+
+          for f in **/SKILL.md; do
+            # Find all http(s) URLs in the file
+            while IFS= read -r url; do
+              [ -z "$url" ] && continue
+              # Allow documentation links: github.com (repo/docs), raw.githubusercontent.com,
+              # agentskills.io, and common doc hosts.
+              if echo "$url" | grep -qE '^(https?://)?(www\.)?(github\.com|raw\.githubusercontent\.com|agentskills\.io|developer\.github\.com|docs\.github\.com|spec\.agentskills\.io)'; then
+                continue
+              fi
+              echo "  ::error file=$f:: non-documentation URL found: $url"
+              errors=$((errors + 1))
+            done < <(grep -oE 'https?://[^[:space:]"'\''`<>)]+' "$f")
+          done
+
+          if [ "$errors" -gt 0 ]; then
+            echo "::error::$errors non-documentation URL(s) found in SKILL.md files"
+            exit 1
+          fi
+          echo "All URLs in SKILL.md files are documentation links."

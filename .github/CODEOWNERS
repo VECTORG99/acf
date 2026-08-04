@@ -1,0 +1,9 @@
+# Default owner for everything in the repository
+* @VECTORG99
+
+# Skill changes need review — skills are agent instructions and the
+# primary security surface (malicious SKILL.md content).
+/.devin/skills/ @VECTORG99
+
+# Security, CI, and governance changes need review
+/.github/ @VECTORG99
