@@ -1,10 +1,10 @@
 ---
 name: frontend-preview
 description: >-
-  Phase 5 of ContextForge (optional). Launches a local frontend preview of the
+  Phase 5 of ACF (optional). Launches a local frontend preview of the
   changes, produces a visual diff (before/after, like git red/green but on the
   web), and optionally captures a screenshot for vision-model review. Use when
-  ContextForge detects frontend changes, or when the user asks to "preview the
+  ACF detects frontend changes, or when the user asks to "preview the
   frontend", "see the visual diff", or "screenshot the change".
 ---
 

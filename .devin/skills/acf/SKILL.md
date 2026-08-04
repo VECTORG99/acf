@@ -1,25 +1,30 @@
 ---
-name: contextforge
+name: acf
 description: >-
   Orchestrator workflow for crafting context-rich GitHub issues and PRs that pass
   CI checks on the first try. Reads project MDs (AGENTS.md, ARCHITECTURE, test docs,
   templates), audits the open stack (orphan PRs, unclosed issues, missing references),
   suggests libraries, and produces issues with structured labels/metadata instead of
-  free-text bodies. Use when the user wants to "create an issue", "open a PR",
-  "craft a contextualized issue", "audit the stack", "check for orphan PRs", or any
-  SDLC planning activity where context quality matters. Also triggers on "armar un
-  issue", "lanzar un PR", "revisar el stack", or "contextualizar el issue".
+  free-text bodies. Includes context compaction (inspired by Kimi CLI) and caveman
+  mode (extreme token compression) for budget-constrained runs. Use when the user
+  wants to "create an issue", "open a PR", "craft a contextualized issue", "audit
+  the stack", "check for orphan PRs", "compact context", or any SDLC planning
+  activity where context quality matters. Also triggers on "armar un issue",
+  "lanzar un PR", "revisar el stack", "contextualizar el issue", or "modo caveman".
 ---
 
-# ContextForge
+# ACF
 
-ContextForge is an orchestrator workflow for the issue→PR loop. It maximizes the
+ACF is an orchestrator workflow for the issue→PR loop. It maximizes the
 context an AI agent (or human) has before writing a single line of code, so PRs
-pass checks faster and alucinaciones are minimized.
+pass checks faster and alucinaciones are minimized. It includes two context
+compaction modes — standard compaction (phase 7, inspired by Kimi CLI) and
+caveman mode (phase 8, extreme token compression) — so the same pipeline runs
+on both large and small context windows.
 
 ## When to use
 
-Use ContextForge when the work involves **creating issues or PRs where context
+Use ACF when the work involves **creating issues or PRs where context
 quality is the bottleneck**. This is the case when:
 
 - The user wants to create an issue and needs it to be rich in context (stack,
@@ -31,8 +36,10 @@ quality is the bottleneck**. This is the case when:
 - The user wants to suggest a library that could improve the codebase (separate
   enhancement issue)
 - The user wants a frontend preview of changes before opening a PR
+- The user wants to compact the context snapshot to save tokens (compaction or
+  caveman mode)
 
-Do NOT use ContextForge for:
+Do NOT use ACF for:
 
 - Routine bug fixes where the issue already exists and is well-contextualized
 - Quick docs changes with no CI impact
@@ -40,7 +47,7 @@ Do NOT use ContextForge for:
 
 ## Core Contract
 
-When Contextforge is active, the orchestrator must manage the work as a pipeline
+When ACF is active, the orchestrator must manage the work as a pipeline
 of context-gathering phases, not as a default implementation worker.
 
 Required behavior:
@@ -59,7 +66,11 @@ Required behavior:
   issue's acceptance criteria, test commands, and CI check names;
 - if the change touches frontend, offer to run **frontend-preview** for a visual
   diff and optional screenshot;
-- keep a local progress file under `.slim/contextforge/` for session state;
+- if the context snapshot exceeds the token budget, run **compaction** (phase 7)
+  to compress it using Kimi-inspired techniques;
+- if the compacted snapshot is still too large, run **caveman** (phase 8) for
+  extreme compression (target <500 tokens);
+- keep a local progress file under `.slim/acf/` for session state;
 - compress context aggressively — reference files by path, don't inline contents.
 
 ## Pipeline Phases
@@ -77,8 +88,16 @@ Required behavior:
 │  5. FRONTEND-PREVIEW (optional) → Launch local view, visual diff,    │
 │                      screenshot with vision models                   │
 │  6. LAUNCH        →  Create issue/PR via gh, verify labels applied    │
+│  7. COMPACTION (auto/optional) → Kimi-inspired context compaction    │
+│                      when snapshot exceeds token budget              │
+│  8. CAVEMAN (optional, extreme) → Extreme compression <500 tokens   │
+│                      for small context windows or budget runs        │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+
+Phases 7 and 8 can trigger at any point after context-load. They are not
+strictly sequential — compaction can run between phases 2 and 3, or between
+phases 4 and 5, whenever the accumulated context exceeds the budget.
 
 ### Phase 1: Context-Load
 
@@ -168,12 +187,59 @@ Triggered only when the change touches frontend files. Launches:
 - Verify labels were applied
 - Update progress file with issue/PR numbers
 
+### Phase 7: Compaction (auto/optional)
+
+Delegate to `skills/07-compaction/SKILL.md` (mirrored at
+`.devin/skills/07-compaction/SKILL.md` for Devin installs).
+
+Triggers when the context snapshot exceeds the token budget (~2000 tokens or
+~8000 chars). Uses techniques adapted from Kimi CLI's open-source compaction
+system:
+
+- **Tail-preservation**: keep the most recent phase output verbatim, compact
+  older outputs into a summary
+- **Priority-based compression**: preserve current task state, errors, test
+  commands, CI check names; compress architecture and conventions
+- **XML-tagged output**: `<current_focus>`, `<stack>`, `<tests>`, `<ci>`,
+  `<architecture>`, `<conventions>`, `<completed_phases>`
+- **First-person handoff**: the compacted progress file reads as the agent's
+  own working notes, not a third-party report
+
+Auto-trigger threshold (following Kimi's `should_auto_compact`):
+```
+trigger = token_count >= max_context_size * 0.75
+       or token_count + reserved_context_size >= max_context_size
+```
+
+Can also be triggered manually with a custom instruction:
+`"compact context — keep the stack-audit findings"`
+
+### Phase 8: Caveman (optional, extreme)
+
+Delegate to `skills/08-caveman/SKILL.md` (mirrored at
+`.devin/skills/08-caveman/SKILL.md` for Devin installs).
+
+Triggers when the compacted snapshot (from phase 7) is still too large, or
+when the user explicitly requests extreme compression. Target: under 500
+tokens for the entire snapshot.
+
+Caveman principles:
+- No prose — only paths, commands, labels, and numbers
+- Symbols over words (`→`, `|`, `#N`)
+- Counts not lists (`26 services` not 26 service names)
+- Bare caveman last resort: only `NOW + NEXT + TESTS + CI` (~100 tokens)
+
+Degradation path:
+```
+Full (~2000 tok) → Compacted (~800 tok, phase 7) → Caveman (<500 tok, phase 8) → Bare caveman (~100 tok)
+```
+
 ## Progress File
 
 Create a task-specific file:
 
 ```text
-.slim/contextforge/<short-task-slug>.md
+.slim/acf/<short-task-slug>.md
 ```
 
 Before creating this file, inspect `.gitignore` and `.ignore`. Add only missing
@@ -181,13 +247,13 @@ entries:
 
 ```gitignore
 # .gitignore
-.slim/contextforge/
+.slim/acf/
 ```
 
 ```gitignore
 # .ignore
-!.slim/contextforge/
-!.slim/contextforge/**
+!.slim/acf/
+!.slim/acf/**
 ```
 
 The file captures:
@@ -201,7 +267,7 @@ The file captures:
 
 ## Context Compression Rules
 
-ContextForge's primary value is **compressed context**. Follow these rules:
+ACF's primary value is **compressed context**. Follow these rules:
 
 1. **Reference files by path**, don't inline contents — `See AGENTS.md §Testing`
    instead of pasting the testing section

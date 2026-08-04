@@ -1,8 +1,8 @@
 ---
 name: pr-context
 description: >-
-  Phase 4 of ContextForge. Builds a PR body that carries the issue's acceptance
-  criteria, test commands, CI check names, and scope lock. Use when ContextForge
+  Phase 4 of ACF. Builds a PR body that carries the issue's acceptance
+  criteria, test commands, CI check names, and scope lock. Use when ACF
   delegates PR creation, or when the user asks to "open a PR", "lanzar un PR",
   or "create a pull request with context".
 ---

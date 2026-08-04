@@ -1,9 +1,9 @@
 ---
 name: stack-audit
 description: >-
-  Phase 2 of ContextForge. Audits the open GitHub stack for orphan PRs, unclosed
+  Phase 2 of ACF. Audits the open GitHub stack for orphan PRs, unclosed
   issues, missing issue↔PR references, and library opportunities. Use when
-  ContextForge delegates stack analysis, or when the user asks to "check the
+  ACF delegates stack analysis, or when the user asks to "check the
   stack", "find orphan PRs", "review open issues", or "what's missing in the
   stack".
 ---

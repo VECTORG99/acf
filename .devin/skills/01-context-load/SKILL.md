@@ -1,9 +1,9 @@
 ---
 name: context-load
 description: >-
-  Phase 1 of ContextForge. Reads all project MDs and builds a compressed context
+  Phase 1 of ACF. Reads all project MDs and builds a compressed context
   snapshot (architecture, challenge, templates, tests, CI checks). Use when
-  ContextForge orchestrator delegates context gathering, or when the user asks to
+  ACF orchestrator delegates context gathering, or when the user asks to
   "load context", "read the project docs", or "understand the stack before making
   an issue".
 ---
@@ -29,7 +29,7 @@ Read in order, skip missing files:
 
 ## Snapshot Schema
 
-Write to the progress file (`.slim/contextforge/<slug>.md`):
+Write to the progress file (`.slim/acf/<slug>.md`):
 
 ```markdown
 ## Context Snapshot

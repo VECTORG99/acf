@@ -1,9 +1,9 @@
 ---
 name: label-metadata
 description: >-
-  Cross-cutting skill for ContextForge. Defines the label and metadata taxonomy
+  Cross-cutting skill for ACF. Defines the label and metadata taxonomy
   that replaces free-text body content as the primary retrieval mechanism. Use
-  when ContextForge needs to assign labels to issues or PRs, or when the user
+  when ACF needs to assign labels to issues or PRs, or when the user
   asks about "label conventions", "issue metadata", or "taxonomy".
 ---
 

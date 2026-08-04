@@ -2,59 +2,73 @@
 
 ## Design Principle
 
-ContextForge follows the **deepwork + oracle** pattern: one orchestrator skill
+ACF follows the **deepwork + oracle** pattern: one orchestrator skill
 that manages a pipeline of phases, each delegated to a separate sub-skill. The
-orchestrator is a scheduler, not an implementation worker.
+orchestrator is a scheduler, not an implementation worker. It also includes
+**context compaction** (phase 7, inspired by Kimi CLI) and **caveman mode**
+(phase 8, extreme compression) so the same pipeline runs on any context window.
 
 ```
                     ┌─────────────────┐
-                    │   contextforge   │  (orchestrator skill)
-                    │   .devin/skills/  │
+                    │      acf        │  (orchestrator skill)
+                    │  .devin/skills/ │
                     └────────┬────────┘
                              │
-          ┌────────┬─────────┼──────────┬──────────┐
-          ▼        ▼         ▼          ▼          ▼
-    ┌──────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────────────┐
-    │ context- │ │ stack- │ │ issue- │ │ pr-    │ │ frontend-      │
-    │ load     │ │ audit  │ │ craft  │ │ context│ │ preview        │
-    │ (01)     │ │ (02)   │ │ (03)   │ │ (04)   │ │ (05, optional) │
-    └──────────┘ └────────┘ └────────┘ └────────┘ └────────────────┘
-          │        │         │          │          │
-          └────────┴─────────┴──────────┴──────────┘
-                             │
-                    ┌────────▼────────┐
-                    │ label-metadata   │  (cross-cutting, all phases)
-                    │ (06)             │
-                    └─────────────────┘
+          ┌────────┬─────────┼──────────┬──────────┬──────────┬──────────┐
+          ▼        ▼         ▼          ▼          ▼          ▼          ▼
+    ┌──────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────────────┐ ┌────────┐ ┌────────┐
+    │ context- │ │ stack- │ │ issue- │ │ pr-    │ │ frontend-      │ │compac- │ │caveman │
+    │ load     │ │ audit  │ │ craft  │ │ context│ │ preview        │ │tion    │ │        │
+    │ (01)     │ │ (02)   │ │ (03)   │ │ (04)   │ │ (05, optional) │ │(07)    │ │(08)    │
+    └──────────┘ └────────┘ └────────┘ └────────┘ └────────────────┘ └────────┘ └────────┘
+          │        │         │          │          │                   │          │
+          └────────┴─────────┴──────────┴──────────┘                   │          │
+                             │                                          │          │
+                    ┌────────▼────────┐                                 │          │
+                    │ label-metadata   │  (cross-cutting, all phases)   │          │
+                    │ (06)             │                                 │          │
+                    └─────────────────┘                                 │          │
+                                                                        │          │
+                                                                        ▼          │
+                                                              [compacted snapshot]   │
+                                                                        │          │
+                                                                        ▼          │
+                                                              [caveman snapshot]─────┘
 ```
 
 ## Skill Placement
 
 ```
-contextforge/
+acf/
 ├── .devin/skills/
-│   ├── contextforge/SKILL.md             ← orchestrator (Devin-native)
-│   ├── 01-context-load/SKILL.md          ← phase 1 mirror (Devin-native)
-│   ├── 02-stack-audit/SKILL.md           ← phase 2 mirror (Devin-native)
-│   ├── 03-issue-craft/SKILL.md           ← phase 3 mirror (Devin-native)
-│   ├── 04-pr-context/SKILL.md            ← phase 4 mirror (Devin-native)
-│   ├── 05-frontend-preview/SKILL.md      ← phase 5 mirror (Devin-native)
-│   └── 06-label-metadata/SKILL.md        ← label taxonomy mirror (Devin-native)
-├── skills/                               ← portable source of truth (OpenCode, Claude Code, etc.)
-│   ├── 01-context-load/SKILL.md          ← phase 1: read MDs, build snapshot
-│   ├── 02-stack-audit/SKILL.md           ← phase 2: audit open stack
-│   ├── 03-issue-craft/SKILL.md           ← phase 3: craft issue
-│   ├── 04-pr-context/SKILL.md            ← phase 4: build PR body
-│   ├── 05-frontend-preview/SKILL.md      ← phase 5: visual diff (optional)
-│   └── 06-label-metadata/SKILL.md        ← cross-cutting: label taxonomy
+│   ├── acf/SKILL.md                    ← orchestrator (Devin-native)
+│   ├── 01-context-load/SKILL.md        ← phase 1 mirror (Devin-native)
+│   ├── 02-stack-audit/SKILL.md         ← phase 2 mirror (Devin-native)
+│   ├── 03-issue-craft/SKILL.md         ← phase 3 mirror (Devin-native)
+│   ├── 04-pr-context/SKILL.md          ← phase 4 mirror (Devin-native)
+│   ├── 05-frontend-preview/SKILL.md    ← phase 5 mirror (Devin-native)
+│   ├── 06-label-metadata/SKILL.md      ← label taxonomy mirror (Devin-native)
+│   ├── 07-compaction/SKILL.md          ← compaction mirror (Devin-native)
+│   └── 08-caveman/SKILL.md             ← caveman mirror (Devin-native)
+├── skills/                             ← portable source of truth (OpenCode, Claude Code, etc.)
+│   ├── 01-context-load/SKILL.md        ← phase 1: read MDs, build snapshot
+│   ├── 02-stack-audit/SKILL.md         ← phase 2: audit open stack
+│   ├── 03-issue-craft/SKILL.md         ← phase 3: craft issue
+│   ├── 04-pr-context/SKILL.md          ← phase 4: build PR body
+│   ├── 05-frontend-preview/SKILL.md    ← phase 5: visual diff (optional)
+│   ├── 06-label-metadata/SKILL.md      ← cross-cutting: label taxonomy
+│   ├── 07-compaction/SKILL.md          ← phase 7: Kimi-inspired compaction
+│   └── 08-caveman/SKILL.md             ← phase 8: extreme compression
 ├── docs/
-│   ├── ARCHITECTURE.md                   ← this file
-│   ├── FLOW.md                           ← end-to-end flow diagram
-│   └── IDEAS.md                          ← source conversation analysis
+│   ├── ARCHITECTURE.md                 ← this file
+│   ├── FLOW.md                         ← end-to-end flow diagram
+│   ├── IDEAS.md                        ← source conversation analysis
+│   ├── PROCESS.md                      ← build process and decision log
+│   └── COMPACTION.md                   ← compaction research (Kimi CLI) and caveman design
 ├── templates/
-│   ├── issue-contextualized.md           ← issue body template
-│   └── pr-contextualized.md              ← PR body template
-├── AGENTS.md                             ← agent directives
+│   ├── issue-contextualized.md         ← issue body template
+│   └── pr-contextualized.md            ← PR body template
+├── AGENTS.md                           ← agent directives
 └── README.md
 ```
 
@@ -67,7 +81,7 @@ edit the copy in `skills/` and re-mirror into `.devin/skills/`.
 
 Following the deepwork model, each phase is a separate SKILL.md because:
 
-1. **Independente invocation** — a user can run `stack-audit` alone without the
+1. **Independent invocation** — a user can run `stack-audit` alone without the
    full pipeline
 2. **Composable** — other orchestrators can reuse individual phases
 3. **Token efficiency** — the orchestrator loads only the phase it needs
@@ -97,15 +111,31 @@ stack-audit ──► findings (orphan PRs, stale issues, lib opportunities)
                         │
                         ▼
                  screenshot ──► attached to PR
+
+              ┌─────────────────────────────────────────────┐
+              │  COMPACTION (triggers when snapshot > 2K tok)│
+              │  Full → Compacted (~800 tok, XML-tagged)     │
+              │  Compacted → Caveman (<500 tok, no prose)    │
+              │  Caveman → Bare caveman (~100 tok, last resort)│
+              └─────────────────────────────────────────────┘
 ```
 
-All intermediate state lives in `.slim/contextforge/<slug>.md`.
+All intermediate state lives in `.slim/acf/<slug>.md`.
 
 ## Context Compression Strategy
 
-The core innovation is **compressed context**:
+ACF has three compression tiers, each building on the previous:
 
-| Traditional issue | ContextForge issue |
+| Tier | Phase | Target tokens | Technique | Token savings |
+|------|-------|--------------|-----------|---------------|
+| Full | 1-6 | ~2000 | Paths, labels, counts | ~70% vs traditional |
+| Compacted | 7 | ~800 | Tail-preservation, priority-based, XML-tagged, first-person handoff | ~88% vs traditional |
+| Caveman | 8 | <500 | No prose, symbols over words, bare minimum | ~93% vs traditional |
+| Bare caveman | 8 (last resort) | ~100 | Only NOW + NEXT + TESTS + CI | ~97% vs traditional |
+
+### Traditional vs ACF comparison
+
+| Traditional issue | ACF issue |
 |---|---|
 | Body: 500 words of context | Body: 50 words + labels |
 | "Priority: High, needs fix soon" | Label: `priority:P1` |
@@ -113,21 +143,75 @@ The core innovation is **compressed context**:
 | Full architecture description | `See ARCHITECTURE.md §3` |
 | Full test list | `lune run scripts/test_core.luau` (113 tests) |
 | Full CI config | `test (lune)` check expected |
+| Full conversation history | Compacted: `<current_focus>` + `<stack>` + `<tests>` |
+| Compacted snapshot still too large | Caveman: `orphan:3 | stale:2 | gap:38→29` |
 
-This reduces token consumption by ~70% and makes automation trivial.
+### Compaction data flow (phase 7)
 
-## Relationship to homedir and Herne
+```
+Full snapshot (~2000 tokens)
+        │
+        ▼  [trigger: token_count >= max * 0.75]
+        │
+   ┌────┴────┐
+   │ to_compact │ (older phases → summarized)
+   │ to_preserve│ (recent phase → verbatim)
+   └────┬────┘
+        │
+        ▼  [Kimi-inspired compaction]
+        │
+   <current_focus> ... </current_focus>
+   <stack> ... </stack>
+   <tests> ... </tests>
+   <ci> ... </ci>
+   <architecture> ... </architecture>
+   <conventions> ... </conventions>
+   <completed_phases> ... </completed_phases>
+        │
+        ▼
+   Compacted snapshot (~800 tokens)
+   + first-person handoff note
+```
 
-ContextForge is **inspired by** but **independent from**:
+### Caveman degradation path (phase 8)
+
+```
+Compacted snapshot (~800 tokens)
+        │
+        ▼  [still too large or caveman requested]
+        │
+   ACF@<project> | branch:<name> | issues:<N> | PRs:<M>
+   STACK: orphan:<N> | stale:<N> | gaps:[PR#→Issue#]
+   TESTS: <cmd> → <N>pass
+   CI: <check>@<workflow>
+   NOW: <current issue/PR — 1line>
+   NEXT: <next action — 1line>
+        │
+        ▼  [still too large]
+        │
+   NOW:<issue/PR 1line>
+   NEXT:<action 1line>
+   TEST:<cmd> → <N>pass
+   CI:<check>@<wf>
+   (~100 tokens — bare caveman)
+```
+
+## Relationship to homedir, Herne, deepwork, and Kimi CLI
+
+ACF is **inspired by** but **independent from**:
 
 - **homedir** — autonomous SDLC pipeline with scc-* labels, admission review,
-  worker timer. ContextForge borrows: label taxonomy, issue metadata validation,
+  worker timer. ACF borrows: label taxonomy, issue metadata validation,
   autonomous-implementation template structure.
 - **Herne** — AAA game development loop with AC patterns, test suites, PR
-  template. ContextForge borrows: AC patterns by issue type, test command
+  template. ACF borrows: AC patterns by issue type, test command
   references, scope lock concept.
-- **deepwork** — orchestrator pattern with oracle review gates. ContextForge
+- **deepwork** — orchestrator pattern with oracle review gates. ACF
   borrows: orchestrator-as-scheduler, progress file, sub-skill delegation.
+- **Kimi CLI** ([MoonshotAI/kimi-cli](https://github.com/MoonshotAI/kimi-cli)) —
+  open-source context compaction system. ACF borrows: tail-preservation,
+  priority-based compression, XML-tagged output structure, first-person
+  handoff, auto-trigger threshold logic (`should_auto_compact`).
 
-ContextForge does NOT touch homedir or Herne. It is a standalone repo that can
+ACF does NOT touch homedir, Herne, or Kimi CLI. It is a standalone repo that can
 be installed into any project.

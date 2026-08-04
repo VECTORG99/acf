@@ -1,9 +1,9 @@
 ---
 name: issue-craft
 description: >-
-  Phase 3 of ContextForge. Crafts a context-rich GitHub issue with structured
+  Phase 3 of ACF. Crafts a context-rich GitHub issue with structured
   labels, acceptance criteria referencing test commands and CI checks, and
-  compressed body. Use when ContextForge delegates issue creation, or when the
+  compressed body. Use when ACF delegates issue creation, or when the
   user asks to "create an issue", "armar un issue", or "write a contextualized
   issue".
 ---

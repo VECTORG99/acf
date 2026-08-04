@@ -1,7 +1,7 @@
 # Ideas — Source Conversation Analysis
 
 This document captures the ideas from the conversation between `lil. vector` and
-`D4MAG3` (31/7/26) that inspired ContextForge, and maps each idea to its
+`D4MAG3` (31/7/26) that inspired ACF, and maps each idea to its
 implementation in the skill architecture.
 
 ## Original Conversation (summarized)
@@ -31,7 +31,7 @@ issue-craft and produces the snapshot that issue-craft consumes.
 > "yo creo que reduciria alucinaciones y pasarian mas rapidos los checks, pero un
 > agente es un monton, yo creo que un skill es suficiente"
 
-**Implementation**: ContextForge is a single orchestrator skill with 6 sub-skills.
+**Implementation**: ACF is a single orchestrator skill with 6 sub-skills.
 No separate agent process. It runs within the existing agent session (Devin,
 OpenCode, Claude Code, etc.).
 
@@ -107,7 +107,7 @@ labels as the primary index. Body text is minimal and secondary.
 > > issue aparte como enhancement) > el contexto se lee para el pr con conocimiento
 > > de los test > el pr se lanza) a poder ser comprimida el contexto"
 
-**Implementation**: This is the exact ContextForge pipeline:
+**Implementation**: This is the exact ACF pipeline:
 1. context-load (lee MDs, aprende arquitectura + templates + tests)
 2. stack-audit (investiga issues, sugiere librerías)
 3. issue-craft (arma issue contextualizado, librería → issue aparte)
@@ -123,6 +123,36 @@ labels as the primary index. Body text is minimal and secondary.
 **Implementation**: Frontend-preview is a skill phase, not an IDE hook. It
 triggers based on the diff content (frontend files detected), not on an IDE
 event. This makes it portable across editors.
+
+### Idea 12: Context compaction (Kimi CLI-inspired)
+
+> "necesito que veas como comprime kimi y compacta para el prompt y gastar
+> menos tokens, creo que era kimi o un modelo opensource de ia que lo hacia
+> y lo dejo publico recientemente investiga y sigue el ciclo"
+
+**Implementation**: Phase 7 (compaction) adapts Kimi CLI's open-source
+compaction system ([MoonshotAI/kimi-cli](https://github.com/MoonshotAI/kimi-cli)).
+Four key techniques are borrowed:
+1. **Tail-preservation** — keep recent phase output verbatim, compact older
+2. **Priority-based compression** — preserve task state, errors, test commands,
+   CI checks; compress architecture and conventions
+3. **XML-tagged output** — `<current_focus>`, `<stack>`, `<tests>`, `<ci>`,
+   `<architecture>`, `<conventions>`, `<completed_phases>`
+4. **First-person handoff** — progress file reads as agent's own working notes
+
+See [docs/COMPACTION.md](COMPACTION.md) for the full research and design notes.
+
+### Idea 13: Caveman mode (extreme token compression)
+
+> "y un posible caveman"
+
+**Implementation**: Phase 8 (caveman) is original to ACF, taking Kimi's
+compression rules to their logical extreme. Target: <500 tokens for the
+entire snapshot. Principles: no prose, symbols over words, counts not lists,
+bare caveman last resort (~100 tokens). Caveman is a separate phase from
+compaction because it serves a different need: "I have almost no context
+budget, give me the bare minimum" vs compaction's "I have too much context
+but I still need structure".
 
 ## Ideas Not Yet Implemented (Future)
 
