@@ -39,14 +39,21 @@ replaces free-text body content as the primary retrieval mechanism.
 ## Architecture
 
 ```
-contextforge (orchestrator)
-├── 01-context-load      → read MDs, build snapshot
-├── 02-stack-audit       → audit open stack
-├── 03-issue-craft       → craft issue with AC + labels
-├── 04-pr-context        → build PR body with context
-├── 05-frontend-preview  → visual diff (optional)
-└── 06-label-metadata    → label taxonomy (cross-cutting)
+.devin/skills/
+├── contextforge/        → orchestrator (Devin-native)
+├── 01-context-load/     → read MDs, build snapshot (mirror)
+├── 02-stack-audit/      → audit open stack (mirror)
+├── 03-issue-craft/      → craft issue with AC + labels (mirror)
+├── 04-pr-context/       → build PR body with context (mirror)
+├── 05-frontend-preview/ → visual diff, optional (mirror)
+└── 06-label-metadata/   → label taxonomy, cross-cutting (mirror)
+
+skills/                  → portable source of truth (same 6 sub-skills)
 ```
+
+`skills/` is the source of truth for sub-skill content; `.devin/skills/*-*`
+are kept-in-sync mirrors so a single `cp -r .devin/skills/*` installs
+everything for Devin.
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for details.
 
@@ -69,8 +76,12 @@ See [docs/FLOW.md](docs/FLOW.md) for the full diagram.
 ### Devin
 
 ```bash
-cp -r .devin/skills/contextforge /target-project/.devin/skills/
+cp -r .devin/skills/* /target-project/.devin/skills/
 ```
+
+This copies the orchestrator (`contextforge/`) **and** all 6 sub-skills
+(`01-context-load/` … `06-label-metadata/`), so the orchestrator's delegation
+paths resolve inside the target project.
 
 ### OpenCode
 
@@ -79,12 +90,16 @@ cp -r .devin/skills/contextforge /target-project/.config/opencode/skills/
 cp -r skills/* /target-project/.config/opencode/skills/
 ```
 
+Copies the orchestrator from `.devin/skills/` and the 6 sub-skills from `skills/`.
+
 ### Claude Code
 
 ```bash
 cp -r .devin/skills/contextforge /target-project/.claude/skills/
 cp -r skills/* /target-project/.claude/skills/
 ```
+
+Same as OpenCode — orchestrator plus all 6 sub-skills.
 
 ### Labels
 

@@ -10,12 +10,12 @@
 3. **docs/FLOW.md** — End-to-end pipeline diagram
 4. **docs/IDEAS.md** — Source conversation and idea mapping
 5. **.devin/skills/contextforge/SKILL.md** — Orchestrator skill
-6. **skills/01-context-load/SKILL.md** — Phase 1: context loading
-7. **skills/02-stack-audit/SKILL.md** — Phase 2: stack auditing
-8. **skills/03-issue-craft/SKILL.md** — Phase 3: issue crafting
-9. **skills/04-pr-context/SKILL.md** — Phase 4: PR context building
-10. **skills/05-frontend-preview/SKILL.md** — Phase 5: frontend preview (optional)
-11. **skills/06-label-metadata/SKILL.md** — Label taxonomy
+6. **skills/01-context-load/SKILL.md** — Phase 1: context loading (mirrored at `.devin/skills/01-context-load/`)
+7. **skills/02-stack-audit/SKILL.md** — Phase 2: stack auditing (mirrored at `.devin/skills/02-stack-audit/`)
+8. **skills/03-issue-craft/SKILL.md** — Phase 3: issue crafting (mirrored at `.devin/skills/03-issue-craft/`)
+9. **skills/04-pr-context/SKILL.md** — Phase 4: PR context building (mirrored at `.devin/skills/04-pr-context/`)
+10. **skills/05-frontend-preview/SKILL.md** — Phase 5: frontend preview (optional) (mirrored at `.devin/skills/05-frontend-preview/`)
+11. **skills/06-label-metadata/SKILL.md** — Label taxonomy (mirrored at `.devin/skills/06-label-metadata/`)
 12. **templates/issue-contextualized.md** — Issue body template
 13. **templates/pr-contextualized.md** — PR body template
 
@@ -29,7 +29,7 @@
 | Sub-skills | 6 (context-load, stack-audit, issue-craft, pr-context, frontend-preview, label-metadata) |
 | Templates | 2 (issue, PR) |
 | Docs | 3 (ARCHITECTURE, FLOW, IDEAS) |
-| Skill format | Devin-native (`.devin/skills/`) + portable (`skills/`) |
+| Skill format | Devin-native (`.devin/skills/`, orchestrator + mirrored sub-skills) + portable (`skills/`) |
 | Dependencies | `gh` CLI, optional: Playwright (frontend-preview) |
 
 ---
@@ -89,12 +89,17 @@ See `skills/06-label-metadata/SKILL.md` for full taxonomy.
 
 ### Into a Devin project
 
-Copy or symlink `.devin/skills/contextforge/` into the target project's
-`.devin/skills/` directory:
+Copy the orchestrator **and** all sub-skills into the target project's
+`.devin/skills/` directory. The repo mirrors every sub-skill under
+`.devin/skills/` so a single copy is self-contained:
 
 ```bash
-cp -r .devin/skills/contextforge /target/project/.devin/skills/
+cp -r .devin/skills/* /target/project/.devin/skills/
 ```
+
+This installs `contextforge/` (orchestrator) plus `01-context-load/` through
+`06-label-metadata/` (sub-skills), so the orchestrator's delegation paths
+resolve inside the target project.
 
 ### Into an OpenCode project
 
@@ -105,6 +110,8 @@ cp -r .devin/skills/contextforge /target/project/.config/opencode/skills/
 cp -r skills/* /target/project/.config/opencode/skills/
 ```
 
+Installs the orchestrator from `.devin/skills/` plus all 6 sub-skills from `skills/`.
+
 ### Into a Claude Code project
 
 Copy into `.claude/skills/`:
@@ -113,6 +120,8 @@ Copy into `.claude/skills/`:
 cp -r .devin/skills/contextforge /target/project/.claude/skills/
 cp -r skills/* /target/project/.claude/skills/
 ```
+
+Same as OpenCode — orchestrator plus all 6 sub-skills.
 
 ### Label setup
 
@@ -135,17 +144,17 @@ chore:    Build, config, tooling
 
 ## Key File Reference
 
-| Purpose | File |
-|---------|------|
-| Orchestrator skill | `.devin/skills/contextforge/SKILL.md` |
-| Phase 1: context-load | `skills/01-context-load/SKILL.md` |
-| Phase 2: stack-audit | `skills/02-stack-audit/SKILL.md` |
-| Phase 3: issue-craft | `skills/03-issue-craft/SKILL.md` |
-| Phase 4: pr-context | `skills/04-pr-context/SKILL.md` |
-| Phase 5: frontend-preview | `skills/05-frontend-preview/SKILL.md` |
-| Label taxonomy | `skills/06-label-metadata/SKILL.md` |
-| Issue template | `templates/issue-contextualized.md` |
-| PR template | `templates/pr-contextualized.md` |
-| Architecture | `docs/ARCHITECTURE.md` |
-| Flow diagram | `docs/FLOW.md` |
-| Ideas mapping | `docs/IDEAS.md` |
+| Purpose | File (portable) | Devin mirror |
+|---------|------|------|
+| Orchestrator skill | `.devin/skills/contextforge/SKILL.md` | — |
+| Phase 1: context-load | `skills/01-context-load/SKILL.md` | `.devin/skills/01-context-load/SKILL.md` |
+| Phase 2: stack-audit | `skills/02-stack-audit/SKILL.md` | `.devin/skills/02-stack-audit/SKILL.md` |
+| Phase 3: issue-craft | `skills/03-issue-craft/SKILL.md` | `.devin/skills/03-issue-craft/SKILL.md` |
+| Phase 4: pr-context | `skills/04-pr-context/SKILL.md` | `.devin/skills/04-pr-context/SKILL.md` |
+| Phase 5: frontend-preview | `skills/05-frontend-preview/SKILL.md` | `.devin/skills/05-frontend-preview/SKILL.md` |
+| Label taxonomy | `skills/06-label-metadata/SKILL.md` | `.devin/skills/06-label-metadata/SKILL.md` |
+| Issue template | `templates/issue-contextualized.md` | — |
+| PR template | `templates/pr-contextualized.md` | — |
+| Architecture | `docs/ARCHITECTURE.md` | — |
+| Flow diagram | `docs/FLOW.md` | — |
+| Ideas mapping | `docs/IDEAS.md` | — |

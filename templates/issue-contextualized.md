@@ -26,11 +26,12 @@ Simple | Medium | Complex
 - **Complex**: >3 files or architectural decision — consider decomposition
 
 <!--
-Labels to apply:
+Labels to apply (see skills/06-label-metadata/SKILL.md for the canonical taxonomy):
 - type: bug | enhancement | documentation | refactor | chore | test | security
 - priority: priority:P0 | priority:P1 | priority:P2 | priority:P3
 - area: area:backend | area:frontend | area:ci | area:docs | area:security | area:devops
-- status: ready-to-implement (if ready for work)
+- status: ready-to-implement | needs-human | blocked
+- enhancement: library-review | batch-delivery (>2 AC, needs decomposition)
 
 If this issue has a library suggestion:
 - Create a separate issue with label: library-review, enhancement

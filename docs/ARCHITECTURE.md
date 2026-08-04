@@ -32,8 +32,15 @@ orchestrator is a scheduler, not an implementation worker.
 
 ```
 contextforge/
-├── .devin/skills/contextforge/SKILL.md   ← orchestrator (Devin-native)
-├── skills/
+├── .devin/skills/
+│   ├── contextforge/SKILL.md             ← orchestrator (Devin-native)
+│   ├── 01-context-load/SKILL.md          ← phase 1 mirror (Devin-native)
+│   ├── 02-stack-audit/SKILL.md           ← phase 2 mirror (Devin-native)
+│   ├── 03-issue-craft/SKILL.md           ← phase 3 mirror (Devin-native)
+│   ├── 04-pr-context/SKILL.md            ← phase 4 mirror (Devin-native)
+│   ├── 05-frontend-preview/SKILL.md      ← phase 5 mirror (Devin-native)
+│   └── 06-label-metadata/SKILL.md        ← label taxonomy mirror (Devin-native)
+├── skills/                               ← portable source of truth (OpenCode, Claude Code, etc.)
 │   ├── 01-context-load/SKILL.md          ← phase 1: read MDs, build snapshot
 │   ├── 02-stack-audit/SKILL.md           ← phase 2: audit open stack
 │   ├── 03-issue-craft/SKILL.md           ← phase 3: craft issue
@@ -50,6 +57,11 @@ contextforge/
 ├── AGENTS.md                             ← agent directives
 └── README.md
 ```
+
+`skills/` is the **source of truth** for sub-skill content; `.devin/skills/*-*`
+are kept in sync mirrors so a single `cp -r .devin/skills/* /target/.devin/skills/`
+installs the orchestrator and every sub-skill for Devin. When editing a sub-skill,
+edit the copy in `skills/` and re-mirror into `.devin/skills/`.
 
 ## Why Sub-Skills Are Separate
 

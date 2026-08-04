@@ -82,7 +82,8 @@ Required behavior:
 
 ### Phase 1: Context-Load
 
-Delegate to `skills/01-context-load/SKILL.md`.
+Delegate to `skills/01-context-load/SKILL.md` (mirrored at
+`.devin/skills/01-context-load/SKILL.md` for Devin installs).
 
 Reads in order (skip missing):
 1. `AGENTS.md` — workflow, conventions, file reference
@@ -99,7 +100,8 @@ files by path only — never inline full contents.
 
 ### Phase 2: Stack-Audit
 
-Delegate to `skills/02-stack-audit/SKILL.md`.
+Delegate to `skills/02-stack-audit/SKILL.md` (mirrored at
+`.devin/skills/02-stack-audit/SKILL.md` for Devin installs).
 
 Checks:
 - Open PRs that reference no issue (orphan PRs)
@@ -118,10 +120,11 @@ gh pr list --state merged --json number,title,body --limit 20
 
 ### Phase 3: Issue-Craft
 
-Delegate to `skills/03-issue-craft/SKILL.md`.
+Delegate to `skills/03-issue-craft/SKILL.md` (mirrored at
+`.devin/skills/03-issue-craft/SKILL.md` for Devin installs).
 
 Every crafted issue MUST have:
-- **Title**: `<type>: <description>` (type = feat/fix/docs/refactor/chore/test)
+- **Title**: `<type>: <description>` (type = feat/fix/docs/refactor/chore/test/security)
 - **Labels**: type label + priority label + area label (from label-metadata)
 - **Body sections** (compressed, not verbose):
   - Summary (1-2 sentences)
@@ -138,7 +141,8 @@ If stack-audit found a library opportunity:
 
 ### Phase 4: PR-Context
 
-Delegate to `skills/04-pr-context/SKILL.md`.
+Delegate to `skills/04-pr-context/SKILL.md` (mirrored at
+`.devin/skills/04-pr-context/SKILL.md` for Devin installs).
 
 The PR body MUST carry:
 - `Closes #N` (or `Refs #N` if not closing)
@@ -149,7 +153,8 @@ The PR body MUST carry:
 
 ### Phase 5: Frontend-Preview (optional)
 
-Delegate to `skills/05-frontend-preview/SKILL.md`.
+Delegate to `skills/05-frontend-preview/SKILL.md` (mirrored at
+`.devin/skills/05-frontend-preview/SKILL.md` for Devin installs).
 
 Triggered only when the change touches frontend files. Launches:
 - Local dev server (if running) at the affected route
@@ -213,17 +218,21 @@ ContextForge's primary value is **compressed context**. Follow these rules:
 
 ## Label & Metadata Conventions
 
-Delegate to `skills/06-label-metadata/SKILL.md`.
+Delegate to `skills/06-label-metadata/SKILL.md` (mirrored at
+`.devin/skills/06-label-metadata/SKILL.md` for Devin installs).
 
 Every issue and PR MUST use structured labels:
 
 | Category | Labels | Purpose |
 |----------|--------|---------|
-| Type | `bug`, `enhancement`, `documentation`, `refactor`, `chore`, `test` | What kind of change |
+| Type | `bug`, `enhancement`, `documentation`, `refactor`, `chore`, `test`, `security` | What kind of change |
 | Priority | `priority:P0`, `priority:P1`, `priority:P2`, `priority:P3` | SLA urgency |
-| Area | `area:backend`, `area:frontend`, `area:ci`, `area:docs`, `area:security` | Where in the stack |
-| Status | `ready-to-implement`, `needs-metadata`, `blocked` | Workflow state |
-| Enhancement | `library-review` | Library suggestion issue |
+| Area | `area:backend`, `area:frontend`, `area:ci`, `area:docs`, `area:security`, `area:devops` | Where in the stack |
+| Status | `ready-to-implement`, `needs-metadata`, `blocked`, `needs-human` | Workflow state |
+| Enhancement | `library-review`, `batch-delivery` | Library suggestion / >2 AC decomposition |
+
+> This is a summary. The canonical taxonomy lives in
+> `skills/06-label-metadata/SKILL.md` — when in doubt, defer to it.
 
 Labels are the primary retrieval mechanism for automation. Body text is
 secondary context, not the primary index.
