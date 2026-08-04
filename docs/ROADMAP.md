@@ -15,11 +15,11 @@ multi-agent compatibility layer needs manual verification on each agent.
 
 | Dimension | Status | Score (1-5) | Notes |
 |-----------|--------|-------------|-------|
-| Architecture | Done | 4 | deepwork+oracle pattern, 8 phases, clear data flow |
-| Skill content | Done | 3 | All 8 SKILL.md written, but not iteratively tested |
+| Architecture | Done | 4 | deepwork+oracle pattern, 9 phases (0-8), graph-scope added |
+| Skill content | Done | 3 | All 9 SKILL.md written, graph-scope added, not iteratively tested |
 | Multi-agent compat | In progress | 2 | install.sh + agentskills.io compliance added, not tested on all agents |
 | Security | In progress | 2 | SECURITY.md, CI secret scan added, no audit done |
-| Testing | Done | 3 | 4 test suites (validate, install, integration, benchmark) — 35 tests passing |
+| Testing | Done | 3 | 4 test suites (validate, install, integration, benchmark) — 37 tests passing |
 | Documentation | Done | 4 | 7 docs (ARCHITECTURE, FLOW, IDEAS, PROCESS, COMPACTION, COMPATIBILITY, ROADMAP) |
 | Compaction | Benchmarked | 4 | Kimi-inspired design + benchmark: 284 tokens compacted (98% savings) |
 | Caveman | Benchmarked | 4 | Extreme compression + benchmark: 64 tokens caveman, 26 bare (99% savings) |
@@ -69,8 +69,9 @@ What we need (the remaining 35%):
 - [x] Multi-agent compatibility (install.sh, agentskills.io spec)
 - [x] Security baseline (SECURITY.md, CI secret scan, CODEOWNERS)
 - [x] Skill validation CI (validate-skills.sh)
-- [x] Test suite: installer, validator, integration, benchmark (35 tests)
+- [x] Test suite: installer, validator, integration, benchmark (37 tests)
 - [x] Benchmark: compaction 98% savings, caveman 99% savings (measured)
+- [x] Graph-scope (phase 0): dependency graph + blast radius, zero dependencies
 - [ ] Test install on Claude Code, Cursor, Codex, OpenCode, Devin (manual)
 - [ ] Fix any spec compliance issues found during testing
 

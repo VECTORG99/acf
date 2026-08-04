@@ -1,108 +1,152 @@
-# ACF - Agentic Context Forger
+# ACF — Agentic Context Forger
 
-> Orchestrator skill for crafting context-rich GitHub issues and PRs that pass CI
-> on the first try. Inspired by deepwork + oracle, homedir's SDLC pipeline, and
-> Herne's acceptance criteria patterns. Includes Kimi CLI-inspired context
-> compaction and caveman extreme-compression mode.
+> A composable repertoire of high-level skills that give AI coding agents
+> surgical precision over project context. Decompose projects into navigable
+> dependency graphs, compact context to fit any model's window, and craft
+> issues and PRs that pass CI on the first try.
 
-## What it does
+ACF is not a single skill — it's a **repertoire**. Each skill works
+independently ("just compact this", "just audit the stack", "just map the
+graph"), but together they form a pipeline that takes an agent from "what
+should I do?" to "here's the exact scope, the exact context, and the exact
+issue/PR — all compressed to fit your token budget."
 
-ACF runs an 8-phase pipeline before any issue or PR is created:
+## The Three Layers
 
-1. **Context-Load** — reads all project MDs (AGENTS.md, ARCHITECTURE, test docs,
-   templates, CI workflows) and builds a compressed snapshot
-2. **Stack-Audit** — detects orphan PRs, unclosed issues, missing issue↔PR
-   references, and library opportunities
-3. **Issue-Craft** — crafts an issue with structured labels, acceptance criteria
-   referencing real test commands and CI checks, and a compressed body
-4. **PR-Context** — builds a PR body that carries the issue's AC, test commands,
-   CI check names, and scope lock
-5. **Frontend-Preview** (optional) — launches a local view of the changes,
-   produces a visual diff (git-style red/green on the web), and captures a
-   screenshot for vision-model review
-6. **Launch** — creates the issue/PR via `gh`, verifies labels were applied
-7. **Compaction** (auto/optional) — Kimi CLI-inspired context compaction when
-   the snapshot exceeds the token budget (tail-preservation, priority-based
-   compression, XML-tagged output, first-person handoff)
-8. **Caveman** (optional, extreme) — extreme compression to under 500 tokens
-   for small context windows or budget-constrained runs
+ACF organizes its skills into three layers. Each layer can be used alone,
+combined with another, or run end-to-end through the orchestrator.
 
-A cross-cutting 6th skill (**Label-Metadata**) defines the label taxonomy that
-replaces free-text body content as the primary retrieval mechanism.
+### 1. Scope — graph-scope
 
-## Why
+The project is decomposed into a **dependency graph**. When a change is
+requested, only the affected subgraph is loaded — not the entire project.
+The agent reads what matters, not everything.
 
-- **Reduce alucinaciones** — the AI has the full project context before writing
-  anything
-- **Pass checks faster** — AC reference real test commands and CI checks, so the
-  PR is built to pass
-- **Save tokens** — labels and path references instead of inlined content (~70%
-  reduction with compaction, ~90% with caveman)
-- **Nothing escapes the stack** — orphan PRs and unclosed issues are detected
-  before new work starts
-- **Library suggestions are documented** — separate enhancement issues, not
-  buried in a bug fix
-- **Runs on any context window** — compaction and caveman modes adapt the
-  pipeline to small models and budget-constrained APIs
+- Build the graph with grep/find (no external dependencies, no runtime)
+- Forward traversal: blast radius (what might break)
+- Backward traversal: context scope (what to load)
+- 60-90% context reduction on large projects
+
+### 2. Context — context-load + compaction + caveman
+
+A compressed snapshot of the relevant scope is built, then compressed
+again to fit the model's context window.
+
+- **Full**: ~21K tokens (all skills concatenated, baseline)
+- **Compacted** (phase 7): ~284 tokens — **98% savings** (tail-preservation,
+  priority-based, XML-tagged, first-person handoff)
+- **Caveman** (phase 8): ~64 tokens — **99% savings** (no prose, symbols
+  over words, bare minimum)
+- **Bare caveman**: ~26 tokens — **99% savings** (only NOW + NEXT + TESTS + CI)
+
+The same pipeline runs on a 200K context window or a 4K one.
+
+### 3. Craft — issue-craft + pr-context + stack-audit + label-metadata
+
+Structured GitHub artifacts with acceptance criteria that reference real
+test commands and CI checks. Labels replace free text as the primary
+retrieval mechanism.
+
+- Issues with AC checkboxes, test commands, CI check names, complexity
+- PRs that carry the issue's context forward (scope lock, AC verification)
+- Stack audit: orphan PRs, unclosed issues, missing issue↔PR references
+- Label taxonomy: type + priority + area + status (minimum 3 per issue)
+
+## The Repertoire
+
+| Skill | Layer | Works standalone | Synergy |
+|-------|-------|-----------------|---------|
+| `graph-scope` | Scope | Yes — "map dependencies", "what breaks if I change X" | Narrows context-load to the affected subgraph |
+| `context-load` | Context | Yes — "load context", "read the project docs" | Feeds issue-craft and pr-context |
+| `stack-audit` | Context | Yes — "check the stack", "find orphan PRs" | Surfaces blockers before issue-craft |
+| `issue-craft` | Craft | Yes — "create an issue", "armar un issue" | Consumes context-load + stack-audit output |
+| `pr-context` | Craft | Yes — "open a PR", "lanzar un PR" | Carries issue-craft AC into the PR body |
+| `frontend-preview` | Craft | Yes — "preview the frontend", "visual diff" | Optional, triggered on frontend changes |
+| `label-metadata` | Craft | Yes — "label conventions", "taxonomy" | Cross-cutting, used by issue-craft and pr-context |
+| `compaction` | Context | Yes — "compact context", "compress the snapshot" | Compresses any accumulated context |
+| `caveman` | Context | Yes — "modo caveman", "extreme compression" | Last resort when compaction isn't enough |
+
+**All-in-one**: the `acf` orchestrator runs all skills as a pipeline:
+`graph-scope → context-load → stack-audit → issue-craft → pr-context → launch`,
+with `compaction` and `caveman` triggering automatically when the token
+budget is exceeded.
 
 ## Architecture
 
 ```
 .devin/skills/
-├── acf/                 → orchestrator (Devin-native)
-├── 01-context-load/     → read MDs, build snapshot (mirror)
-├── 02-stack-audit/      → audit open stack (mirror)
-├── 03-issue-craft/      → craft issue with AC + labels (mirror)
-├── 04-pr-context/       → build PR body with context (mirror)
-├── 05-frontend-preview/ → visual diff, optional (mirror)
-├── 06-label-metadata/   → label taxonomy, cross-cutting (mirror)
-├── 07-compaction/       → Kimi-inspired context compaction (mirror)
-└── 08-caveman/          → extreme compression <500 tokens (mirror)
+├── acf/                 → orchestrator (all skills as a pipeline)
+├── 01-context-load/     → read MDs + scoped files, build snapshot
+├── 02-stack-audit/      → audit open GitHub stack
+├── 03-issue-craft/      → craft issue with AC + labels
+├── 04-pr-context/       → build PR body with context
+├── 05-frontend-preview/ → visual diff (optional)
+├── 06-label-metadata/   → label taxonomy (cross-cutting)
+├── 07-compaction/       → context compaction
+├── 08-caveman/          → extreme compression <500 tokens
+└── 09-graph-scope/      → dependency graph + blast radius (cross-cutting)
 
-skills/                  → portable source of truth (same 8 sub-skills)
+skills/                  → portable source of truth (same 9 sub-skills)
 ```
 
-`skills/` is the source of truth for sub-skill content; `.devin/skills/*-*`
-are kept-in-sync mirrors so a single `cp -r .devin/skills/*` installs
-everything for Devin.
+`skills/` is the source of truth; `.devin/skills/*` are kept-in-sync
+mirrors. The installer copies both into any supported agent's directory.
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for details.
 
 ## Flow
 
 ```
-context-load → stack-audit → issue-craft → gh issue create
-                                            ↓
-                                    [implementation]
-                                            ↓
-                                    pr-context → frontend-preview (optional)
-                                            ↓
-                                    gh pr create → CI passes ✅
+graph-scope → context-load (scoped) → stack-audit → issue-craft → gh issue create
+                                                                     ↓
+                                                             [implementation]
+                                                                     ↓
+                                                             pr-context → frontend-preview (optional)
+                                                                     ↓
+                                                             gh pr create → CI passes ✅
 
 [compaction triggers when snapshot > ~2000 tokens]
 [caveman triggers when compacted snapshot still too large]
 ```
 
+In `full` mode (small projects or explicit request), graph-scope is skipped
+and context-load reads everything.
+
 See [docs/FLOW.md](docs/FLOW.md) for the full diagram.
 
 ## Context Compaction
 
-ACF includes two context compression modes inspired by Kimi CLI's open-source
-compaction system ([MoonshotAI/kimi-cli](https://github.com/MoonshotAI/kimi-cli)):
+Two compression modes, measured by the benchmark suite:
 
-| Mode | Phase | Target tokens | Technique |
-|------|-------|--------------|-----------|
-| Full | 1-6 | ~2000 | Paths, labels, counts (default) |
-| Compacted | 7 | ~800 | Tail-preservation, priority-based, XML-tagged, first-person handoff |
-| Caveman | 8 | <500 | No prose, symbols over words, bare minimum |
-| Bare caveman | 8 (last resort) | ~100 | Only NOW + NEXT + TESTS + CI |
+| Mode | Phase | Tokens | Savings | Technique |
+|------|-------|--------|---------|-----------|
+| Full | 1-6 | ~21,000 | baseline | Paths, labels, counts |
+| Compacted | 7 | ~284 | 98% | Tail-preservation, priority-based, XML-tagged, first-person handoff |
+| Caveman | 8 | ~64 | 99% | No prose, symbols over words, bare minimum |
+| Bare caveman | 8 (last resort) | ~26 | 99% | Only NOW + NEXT + TESTS + CI |
 
-See [docs/COMPACTION.md](docs/COMPACTION.md) for the full research and design notes.
+See [docs/COMPACTION.md](docs/COMPACTION.md) for the full design notes.
+
+## Graph-Scope
+
+The differentiator. Existing tools (change-impact-analysis, project-understanding,
+Hawkeye, Constrictor) build dependency graphs with AST parsers and external
+dependencies. ACF graph-scope does it with **grep and agent reasoning** — no
+runtime, no tree-sitter, no Python.
+
+| Tool | Dependencies | ACF integration | Compaction |
+|------|--------------|-----------------|------------|
+| change-impact-analysis | Python, PyYAML | None | No |
+| project-understanding | Node, tree-sitter | None | Token budgeting |
+| Hawkeye | Python | None | Compact JSON |
+| Constrictor | Python | None | No |
+| **ACF graph-scope** | **None** | **Yes (pipeline)** | **Yes (phase 7/8)** |
+
+The trade-off: less precise than AST-based tools (regex, not parsing). The
+advantage: zero dependencies, any language, integrates with compaction and
+issue-craft, produces agent-readable markdown.
 
 ## Testing
-
-ACF includes a full test suite covering the installer, validator, integration,
-and compaction benchmark:
 
 ```bash
 bash scripts/test-all.sh
@@ -113,7 +157,7 @@ bash scripts/test-all.sh
 | `test-validate.sh` | 9 | Frontmatter, name, description, body length, mirror sync |
 | `test-install.sh` | 12 | All 6 agents, --all, --agent, auto-detect, errors, idempotency |
 | `test-integration.sh` | 6 | Install → validate, byte-identical, preserves existing, no leaks |
-| `benchmark-compaction.sh` | — | Token counts: full (21082) → compacted (284, 98%) → caveman (64, 99%) → bare (26, 99%) |
+| `benchmark-compaction.sh` | — | Token counts: full → compacted (98%) → caveman (99%) → bare (99%) |
 
 All 35 tests pass. CI runs them on every push and PR.
 
@@ -153,33 +197,29 @@ target repo.
 
 ## Usage
 
-Once installed, the skill triggers when the user asks to create an issue, open a
-PR, audit the stack, compact context, or any SDLC planning activity where
-context quality matters.
+Once installed, skills trigger individually or together:
 
-Example triggers:
-- "arma un issue para arreglar el flashlight"
-- "create a PR for the contributors color change"
-- "check the stack for orphan PRs"
-- "contextualiza este issue antes de lanzarlo"
-- "compacta el contexto — keep the stack-audit findings"
-- "modo caveman para este issue"
+**Standalone:**
+- "map this project's dependencies" → graph-scope
+- "compacta el contexto — keep the stack-audit findings" → compaction
+- "check the stack for orphan PRs" → stack-audit
+- "modo caveman para este issue" → caveman
+
+**All-in-one (orchestrator):**
+- "arma un issue para arreglar el flashlight" → full pipeline
+- "create a PR for the contributors color change" → full pipeline
+- "contextualiza este issue antes de lanzarlo" → full pipeline
+- "que se rompe si cambio Constants.luau?" → graph-scope + issue-craft
 
 ## Origin
 
 ACF was built from a conversation between `lil. vector` and `D4MAG3`
 (31/7/26) about making issues and PRs richer in context for AI-driven
-development. See [docs/IDEAS.md](docs/IDEAS.md) for the full idea mapping and
-[docs/PROCESS.md](docs/PROCESS.md) for the build process.
+development. The name stands for **Agentic Context Forger** — the project
+forges context for agents, not just loads it.
 
-The architecture follows the **deepwork + oracle** pattern (orchestrator skill
-with separate sub-skills), and borrows patterns from:
-- **deepwork** — orchestrator-as-scheduler, progress file, sub-skill delegation
-- **homedir** — label taxonomy, issue metadata validation, autonomous-implementation
-  template
-- **Herne** — acceptance criteria patterns, test command references, scope lock
-- **Kimi CLI** — context compaction (tail-preservation, priority-based
-  compression, XML-tagged output, first-person handoff)
+See [docs/IDEAS.md](docs/IDEAS.md) for the full idea mapping and
+[docs/PROCESS.md](docs/PROCESS.md) for the build process.
 
 ## License
 

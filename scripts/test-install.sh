@@ -88,14 +88,14 @@ if [[ $? -eq 0 ]]; then
     fi
     # Should have 9 SKILL.md files (acf + 8 sub-skills)
     n=$(count_skills "${tmp}/${agent_dir}")
-    if [[ "$n" -ne 9 ]]; then
+    if [[ "$n" -ne 10 ]]; then
       fail "agent dir $agent_dir has $n skills (expected 9)"
       all_ok=0
       break
     fi
   done
   if [[ $all_ok -eq 1 ]]; then
-    ok "--all created 6 agent dirs with 9 skills each"
+    ok "--all created 6 agent dirs with 10 skills each"
   fi
 else
   fail "--all exited non-zero"
@@ -108,7 +108,7 @@ tmp=$(mktmp)
 bash "$INSTALL" "$tmp" --agent devin >/dev/null 2>&1
 if [[ $? -eq 0 ]]; then
   if assert_dir_exists "$tmp" ".devin/skills" && \
-     [[ $(count_skills "${tmp}/.devin/skills") -eq 9 ]]; then
+     [[ $(count_skills "${tmp}/.devin/skills") -eq 10 ]]; then
     # Verify other agents were NOT created
     if [[ ! -d "${tmp}/.claude/skills" ]] && \
        [[ ! -d "${tmp}/.cursor/skills" ]] && \
@@ -118,7 +118,7 @@ if [[ $? -eq 0 ]]; then
       fail "--agent devin created extra agent dirs"
     fi
   else
-    fail "--agent devin did not install 9 skills to .devin/skills/"
+    fail "--agent devin did not install 10 skills to .devin/skills/"
   fi
 else
   fail "--agent devin exited non-zero"
@@ -162,8 +162,8 @@ bash "$INSTALL" "$tmp" >/dev/null 2>&1
 if [[ $? -eq 0 ]]; then
   if assert_dir_exists "$tmp" ".claude/skills" && \
      assert_dir_exists "$tmp" ".codex/skills" && \
-     [[ $(count_skills "${tmp}/.claude/skills") -eq 9 ]] && \
-     [[ $(count_skills "${tmp}/.codex/skills") -eq 9 ]] && \
+     [[ $(count_skills "${tmp}/.claude/skills") -eq 10 ]] && \
+     [[ $(count_skills "${tmp}/.codex/skills") -eq 10 ]] && \
      [[ ! -d "${tmp}/.devin/skills" ]]; then
     ok "auto-detect installed to .claude and .codex only"
   else
@@ -193,7 +193,7 @@ bash "$INSTALL" "$tmp" --agent claude >/dev/null 2>&1
 n1=$(count_skills "${tmp}/.claude/skills")
 bash "$INSTALL" "$tmp" --agent claude >/dev/null 2>&1
 n2=$(count_skills "${tmp}/.claude/skills")
-if [[ "$n1" -eq 9 ]] && [[ "$n2" -eq 9 ]]; then
+if [[ "$n1" -eq 10 ]] && [[ "$n2" -eq 10 ]]; then
   ok "idempotent: $n1 → $n2 skills after re-run"
 else
   fail "idempotent failed: $n1 → $n2 skills"
@@ -256,12 +256,12 @@ else
 fi
 rm -rf "$tmp"
 
-# --- Test 12: all 8 sub-skills are installed ---
-echo "Test 12: all 8 sub-skills installed"
+# --- Test 12: all 9 sub-skills are installed ---
+echo "Test 12: all 9 sub-skills installed"
 tmp=$(mktmp)
 bash "$INSTALL" "$tmp" --agent claude >/dev/null 2>&1
 all_subs=1
-for sub in 01-context-load 02-stack-audit 03-issue-craft 04-pr-context 05-frontend-preview 06-label-metadata 07-compaction 08-caveman; do
+for sub in 01-context-load 02-stack-audit 03-issue-craft 04-pr-context 05-frontend-preview 06-label-metadata 07-compaction 08-caveman 09-graph-scope; do
   if ! assert_file_exists "$tmp" ".claude/skills/${sub}/SKILL.md"; then
     fail "sub-skill missing: ${sub}/SKILL.md"
     all_subs=0
@@ -269,7 +269,7 @@ for sub in 01-context-load 02-stack-audit 03-issue-craft 04-pr-context 05-fronte
   fi
 done
 if [[ $all_subs -eq 1 ]]; then
-  ok "all 8 sub-skills installed"
+  ok "all 9 sub-skills installed"
 fi
 rm -rf "$tmp"
 

@@ -6,11 +6,15 @@ description: >-
   templates), audits the open stack (orphan PRs, unclosed issues, missing references),
   suggests libraries, and produces issues with structured labels/metadata instead of
   free-text bodies. Includes context compaction (inspired by Kimi CLI) and caveman
-  mode (extreme token compression) for budget-constrained runs. Use when the user
-  wants to "create an issue", "open a PR", "craft a contextualized issue", "audit
-  the stack", "check for orphan PRs", "compact context", or any SDLC planning
-  activity where context quality matters. Also triggers on "armar un issue",
-  "lanzar un PR", "revisar el stack", "contextualizar el issue", or "modo caveman".
+  mode (extreme token compression) for budget-constrained runs. Includes
+  graph-scope, which decomposes the project into a dependency graph so the
+  agent loads context only for the affected subgraph — not the entire project.
+  Use when the user wants to "create an issue", "open a PR", "craft a
+  contextualized issue", "audit the stack", "compact context", "scope a
+  change", "map dependencies", or any SDLC planning activity where context
+  quality matters. Also triggers on "armar un issue", "lanzar un PR",
+  "revisar el stack", "contextualizar el issue", "modo caveman", or "que se
+  rompe si cambio X".
 ---
 
 # ACF
@@ -38,6 +42,10 @@ quality is the bottleneck**. This is the case when:
 - The user wants a frontend preview of changes before opening a PR
 - The user wants to compact the context snapshot to save tokens (compaction or
   caveman mode)
+- The user wants to scope a change to only the affected files ("what's affected
+  by changing X?", "map the dependencies", "scope this change")
+- The project is large and full context-load would waste tokens — graph-scope
+  narrows the scope to the affected subgraph
 
 Do NOT use ACF for:
 
@@ -52,8 +60,13 @@ of context-gathering phases, not as a default implementation worker.
 
 Required behavior:
 
+- before context-load, run **graph-scope** on large projects (>20 source files)
+  to decompose the project into a dependency graph and compute the affected
+  subgraph — the agent loads context only for what the change touches, not the
+  entire project (unless the user requests "full scope");
 - before any issue or PR is created, run **context-load** to read all project MDs
-  and build a compressed context snapshot;
+  and (if scoped) only the files in the graph-scope subgraph, then build a
+  compressed context snapshot;
 - before crafting an issue, run **stack-audit** to detect orphan PRs, unclosed
   issues, and missing issue↔PR references;
 - every issue MUST use **label-metadata** conventions (structured labels, not
@@ -77,8 +90,10 @@ Required behavior:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  1. CONTEXT-LOAD  →  Read all project MDs, build compressed snapshot │
-│                      (architecture, challenge, templates, tests)     │
+│  0. GRAPH-SCOPE   →  Decompose project into dependency graph,       │
+│                      compute affected subgraph for the change        │
+│  1. CONTEXT-LOAD  →  Read project MDs + scoped files, build         │
+│                      compressed snapshot (architecture, tests, CI)   │
 │  2. STACK-AUDIT   →  Detect orphan PRs, unclosed issues, missing     │
 │                      refs, library opportunities                     │
 │  3. ISSUE-CRAFT   →  Craft contextualized issue with AC, labels,     │
@@ -95,9 +110,38 @@ Required behavior:
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
+Phase 0 (graph-scope) runs before context-load to narrow the scope. In
+`full` mode (small projects or explicit user request), graph-scope is
+skipped and context-load reads everything.
+
 Phases 7 and 8 can trigger at any point after context-load. They are not
 strictly sequential — compaction can run between phases 2 and 3, or between
 phases 4 and 5, whenever the accumulated context exceeds the budget.
+
+### Phase 0: Graph-Scope (auto, large projects)
+
+Delegate to `skills/09-graph-scope/SKILL.md` (mirrored at
+`.devin/skills/09-graph-scope/SKILL.md` for Devin installs).
+
+Runs before context-load when the project has more than ~20 source files.
+Decomposes the project into a dependency graph and computes the affected
+subgraph for the current change.
+
+Two traversals:
+- **Forward** (blast radius): what depends on the changed file? What might
+  break?
+- **Backward** (context scope): what does the changed file depend on? What
+  context to load?
+
+Output: a scoped file list that context-load uses instead of reading
+everything. This reduces context by 60-90% on large projects.
+
+Scope modes:
+- `scoped` (default for >20 files): load only the affected subgraph + all MDs
+- `full` (default for ≤20 files, or user override): load everything
+- `manual`: user specifies the file list
+
+The user can override with "full scope" or "scope to [files]".
 
 ### Phase 1: Context-Load
 

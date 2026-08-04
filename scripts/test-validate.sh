@@ -42,9 +42,9 @@ echo "Test 1: validate-skills.sh passes on the real repo"
 output=$(bash "$VALIDATE" 2>&1)
 exit_code=$?
 if [[ $exit_code -eq 0 ]]; then
-  # Should report 17 skills (9 in .devin + 8 in skills/)
-  if echo "$output" | grep -qE '17 passed'; then
-    ok "validate-skills.sh reports 17 passed, 0 failed"
+  # Should report 19 skills (10 in .devin + 9 in skills/)
+  if echo "$output" | grep -qE '19 passed'; then
+    ok "validate-skills.sh reports 19 passed, 0 failed"
   else
     fail "validate-skills.sh passed but count mismatch" "$(echo "$output" | tail -3)"
   fi
@@ -196,7 +196,7 @@ rm -rf "$tmp"
 # --- Test 8: mirrors are in sync (skills/ == .devin/skills/) ---
 echo "Test 8: mirrors are in sync (skills/ ↔ .devin/skills/)"
 all_ok=1
-for sub in 01-context-load 02-stack-audit 03-issue-craft 04-pr-context 05-frontend-preview 06-label-metadata 07-compaction 08-caveman; do
+for sub in 01-context-load 02-stack-audit 03-issue-craft 04-pr-context 05-frontend-preview 06-label-metadata 07-compaction 08-caveman 09-graph-scope; do
   portable="${REPO_ROOT}/skills/${sub}/SKILL.md"
   mirror="${REPO_ROOT}/.devin/skills/${sub}/SKILL.md"
   if [[ ! -f "$portable" ]] || [[ ! -f "$mirror" ]]; then
@@ -211,7 +211,7 @@ for sub in 01-context-load 02-stack-audit 03-issue-craft 04-pr-context 05-fronte
   fi
 done
 if [[ $all_ok -eq 1 ]]; then
-  ok "all 8 mirrors are in sync with portable skills/"
+  ok "all 9 mirrors are in sync with portable skills/"
 fi
 
 # --- Test 9: orchestrator exists only in .devin/skills/acf/ ---

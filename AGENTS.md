@@ -22,10 +22,11 @@
 15. **skills/06-label-metadata/SKILL.md** — Label taxonomy (mirrored at `.devin/skills/06-label-metadata/`)
 16. **skills/07-compaction/SKILL.md** — Phase 7: context compaction (mirrored at `.devin/skills/07-compaction/`)
 17. **skills/08-caveman/SKILL.md** — Phase 8: extreme compression (mirrored at `.devin/skills/08-caveman/`)
-18. **templates/issue-contextualized.md** — Issue body template
-19. **templates/pr-contextualized.md** — PR body template
-20. **SECURITY.md** — Security policy
-21. **CONTRIBUTING.md** — Contributing guidelines
+18. **skills/09-graph-scope/SKILL.md** — Phase 0: dependency graph + blast radius (mirrored at `.devin/skills/09-graph-scope/`)
+19. **templates/issue-contextualized.md** — Issue body template
+20. **templates/pr-contextualized.md** — PR body template
+21. **SECURITY.md** — Security policy
+22. **CONTRIBUTING.md** — Contributing guidelines
 
 ---
 
@@ -34,7 +35,7 @@
 | Metric | Value |
 |--------|-------|
 | Orchestrator skill | 1 (acf) |
-| Sub-skills | 8 (context-load, stack-audit, issue-craft, pr-context, frontend-preview, label-metadata, compaction, caveman) |
+| Sub-skills | 9 (context-load, stack-audit, issue-craft, pr-context, frontend-preview, label-metadata, compaction, caveman, graph-scope) |
 | Templates | 2 (issue, PR) |
 | Docs | 7 (ARCHITECTURE, FLOW, IDEAS, PROCESS, COMPACTION, COMPATIBILITY, ROADMAP) |
 | Skill format | Agent Skills spec (agentskills.io) — compatible with Claude Code, Cursor, Codex CLI, OpenCode, OpenClaw, Devin |
@@ -51,7 +52,10 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  1. CONTEXT-LOAD  →  Read all project MDs, build snapshot        │
+│  0. GRAPH-SCOPE   →  Decompose project into dependency graph,    │
+│                      compute affected subgraph (large projects)  │
+│  1. CONTEXT-LOAD  →  Read project MDs + scoped files, build      │
+│                      snapshot                                    │
 │  2. STACK-AUDIT   →  Detect orphan PRs, stale issues, libs       │
 │  3. ISSUE-CRAFT   →  Craft issue with AC, labels, metadata       │
 │  4. PR-CONTEXT    →  Build PR body with issue context            │
@@ -207,6 +211,7 @@ chore:    Build, config, tooling
 | Phase 6: label-metadata | `skills/06-label-metadata/SKILL.md` | `.devin/skills/06-label-metadata/SKILL.md` |
 | Phase 7: compaction | `skills/07-compaction/SKILL.md` | `.devin/skills/07-compaction/SKILL.md` |
 | Phase 8: caveman | `skills/08-caveman/SKILL.md` | `.devin/skills/08-caveman/SKILL.md` |
+| Phase 0: graph-scope | `skills/09-graph-scope/SKILL.md` | `.devin/skills/09-graph-scope/SKILL.md` |
 | Issue template | `templates/issue-contextualized.md` | — |
 | PR template | `templates/pr-contextualized.md` | — |
 | Architecture | `docs/ARCHITECTURE.md` | — |

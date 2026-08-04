@@ -111,7 +111,7 @@ if ! diff -q "${REPO_ROOT}/.devin/skills/acf/SKILL.md" "${tmp}/.devin/skills/acf
   all_identical=0
 fi
 # Check sub-skills
-for sub in 01-context-load 02-stack-audit 03-issue-craft 04-pr-context 05-frontend-preview 06-label-metadata 07-compaction 08-caveman; do
+for sub in 01-context-load 02-stack-audit 03-issue-craft 04-pr-context 05-frontend-preview 06-label-metadata 07-compaction 08-caveman 09-graph-scope; do
   if ! diff -q "${REPO_ROOT}/skills/${sub}/SKILL.md" "${tmp}/.devin/skills/${sub}/SKILL.md" >/dev/null 2>&1; then
     fail "sub-skill ${sub}/SKILL.md differs after install"
     all_identical=0
@@ -176,14 +176,14 @@ if [[ $all_same -eq 1 ]]; then
 fi
 rm -rf "$tmp"
 
-# --- Test 5: skill count is consistent (9 per agent) ---
-echo "Test 5: skill count is 9 per agent (1 orchestrator + 8 sub-skills)"
+# --- Test 5: skill count is consistent (10 per agent) ---
+echo "Test 5: skill count is 10 per agent (1 orchestrator + 9 sub-skills)"
 tmp=$(mktemp -d "/tmp/acf-integ-XXXXXX")
 bash "$INSTALL" "$tmp" --all >/dev/null 2>&1
 all_count_ok=1
 for agent_dir in .devin/skills .claude/skills .cursor/skills .codex/skills .agents/skills .opencode/skills; do
   n=$(find "${tmp}/${agent_dir}" -name "SKILL.md" -type f | wc -l)
-  if [[ "$n" -ne 9 ]]; then
+  if [[ "$n" -ne 10 ]]; then
     fail "${agent_dir} has ${n} skills (expected 9)"
     all_count_ok=0
     break
