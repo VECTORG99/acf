@@ -99,6 +99,24 @@ compaction system ([MoonshotAI/kimi-cli](https://github.com/MoonshotAI/kimi-cli)
 
 See [docs/COMPACTION.md](docs/COMPACTION.md) for the full research and design notes.
 
+## Testing
+
+ACF includes a full test suite covering the installer, validator, integration,
+and compaction benchmark:
+
+```bash
+bash scripts/test-all.sh
+```
+
+| Suite | Tests | What it covers |
+|-------|-------|----------------|
+| `test-validate.sh` | 9 | Frontmatter, name, description, body length, mirror sync |
+| `test-install.sh` | 12 | All 6 agents, --all, --agent, auto-detect, errors, idempotency |
+| `test-integration.sh` | 6 | Install → validate, byte-identical, preserves existing, no leaks |
+| `benchmark-compaction.sh` | — | Token counts: full (21082) → compacted (284, 98%) → caveman (64, 99%) → bare (26, 99%) |
+
+All 35 tests pass. CI runs them on every push and PR.
+
 ## Installation
 
 ### Universal installer (recommended)

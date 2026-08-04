@@ -3,12 +3,13 @@
 > Product maturity assessment and forward plan.
 > Last updated: 2026-08-04
 
-## Current Phase: Alpha (v0.2)
+## Current Phase: Alpha (v0.3)
 
 ACF is in **alpha**. The core architecture is sound, the 8-phase pipeline is
-designed, and all skills are documented. But the system has not been
-battle-tested in production, no metrics have been collected, and the
-multi-agent compatibility layer is brand new.
+designed, all skills are documented, and the test suite now covers the
+installer, validator, integration, and compaction benchmark. The system has
+not been battle-tested in production across multiple real projects, and the
+multi-agent compatibility layer needs manual verification on each agent.
 
 ## Maturity Assessment
 
@@ -18,14 +19,14 @@ multi-agent compatibility layer is brand new.
 | Skill content | Done | 3 | All 8 SKILL.md written, but not iteratively tested |
 | Multi-agent compat | In progress | 2 | install.sh + agentskills.io compliance added, not tested on all agents |
 | Security | In progress | 2 | SECURITY.md, CI secret scan added, no audit done |
-| Testing | Missing | 1 | No automated tests for skill behavior, only spec validation |
+| Testing | Done | 3 | 4 test suites (validate, install, integration, benchmark) — 35 tests passing |
 | Documentation | Done | 4 | 7 docs (ARCHITECTURE, FLOW, IDEAS, PROCESS, COMPACTION, COMPATIBILITY, ROADMAP) |
-| Compaction | Designed | 3 | Kimi-inspired design complete, not benchmarked |
-| Caveman | Designed | 3 | Extreme compression designed, not benchmarked |
+| Compaction | Benchmarked | 4 | Kimi-inspired design + benchmark: 284 tokens compacted (98% savings) |
+| Caveman | Benchmarked | 4 | Extreme compression + benchmark: 64 tokens caveman, 26 bare (99% savings) |
 | Adoption | Not started | 1 | Issue created for artemisa/homedir, no actual installs |
-| Metrics | Missing | 1 | No token savings measured, no CI-pass-rate tracked |
+| Metrics | Partial | 2 | Compaction benchmark exists (98-99% savings), no CI-pass-rate tracked yet |
 | Community | Not started | 1 | No contributors, no marketplace listing, no awesome-list presence |
-| **Overall** | **Alpha** | **2.4/5** | **Solid foundation, needs testing and adoption** |
+| **Overall** | **Alpha** | **2.8/5** | **Solid foundation, tests + benchmarks done, needs adoption** |
 
 ## Distance to First-Class Product
 
@@ -37,18 +38,20 @@ A "first-class product" in the AI coding skill space means:
 - Has community contributors and a governance process
 - Has a stable v1.0 with semantic versioning
 
-**Current distance: ~60% of the way to v1.0.**
+**Current distance: ~65% of the way to v1.0.**
 
-What we have (the 60%):
+What we have (the 65%):
 - Complete architecture and skill design
-- Compaction and caveman (the key differentiators)
-- Multi-agent compatibility layer
-- Security baseline
-- Comprehensive documentation
+- Compaction and caveman (the key differentiators) — now benchmarked
+- Multi-agent compatibility layer (6 agents, tested installer)
+- Security baseline (SECURITY.md, CI secret scan, CODEOWNERS)
+- Comprehensive documentation (7 docs)
+- Test suite: 35 tests across 4 suites (validate, install, integration, benchmark)
+- Compaction benchmark: 98% savings (compacted), 99% (caveman/bare)
 
-What we need (the remaining 40%):
-- Real-world testing with measured outcomes
-- Benchmark suite for compaction/caveman token savings
+What we need (the remaining 35%):
+- Real-world testing with measured outcomes on actual projects
+- Manual verification on each of the 6 agents (trigger behavior)
 - Adoption in artemisa, homedir, and 2+ external projects
 - Community presence (awesome-lists, blog posts, demos)
 - Iterative skill improvement based on usage data
@@ -56,7 +59,7 @@ What we need (the remaining 40%):
 
 ## Roadmap
 
-### Phase 1: Alpha Stabilization (current — v0.2 → v0.3)
+### Phase 1: Alpha Stabilization (current — v0.3 → v0.4)
 
 **Goal**: Make ACF testable and installable across all agents.
 
@@ -66,9 +69,10 @@ What we need (the remaining 40%):
 - [x] Multi-agent compatibility (install.sh, agentskills.io spec)
 - [x] Security baseline (SECURITY.md, CI secret scan, CODEOWNERS)
 - [x] Skill validation CI (validate-skills.sh)
-- [ ] Test install on Claude Code, Cursor, Codex, OpenCode, Devin
+- [x] Test suite: installer, validator, integration, benchmark (35 tests)
+- [x] Benchmark: compaction 98% savings, caveman 99% savings (measured)
+- [ ] Test install on Claude Code, Cursor, Codex, OpenCode, Devin (manual)
 - [ ] Fix any spec compliance issues found during testing
-- [ ] Benchmark: measure token savings of compaction vs full vs caveman
 
 ### Phase 2: Beta — Real-World Testing (v0.3 → v0.5)
 
@@ -193,4 +197,4 @@ ACF follows semantic versioning:
 - **v1.x**: Stable — breaking changes require major version bump
 - **v1.x.y**: Patch — bug fixes, skill content improvements
 
-Current: **v0.2.0**
+Current: **v0.3.0**

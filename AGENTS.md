@@ -43,6 +43,7 @@
 | Dependencies | `gh` CLI, optional: Playwright (frontend-preview) |
 | Compaction | Kimi CLI-inspired (phase 7) + caveman extreme mode (phase 8) |
 | Security | SECURITY.md, CODEOWNERS, CI secret scan, skill validation CI |
+| Tests | 4 suites (validate, install, integration, benchmark) — 35 tests, all passing |
 
 ---
 
@@ -217,6 +218,11 @@ chore:    Build, config, tooling
 | Roadmap | `docs/ROADMAP.md` | — |
 | Installer | `install.sh` | — |
 | Skill validator | `scripts/validate-skills.sh` | — |
+| Validator tests | `scripts/test-validate.sh` | — |
+| Installer tests | `scripts/test-install.sh` | — |
+| Integration tests | `scripts/test-integration.sh` | — |
+| Compaction benchmark | `scripts/benchmark-compaction.sh` | — |
+| Full test runner | `scripts/test-all.sh` | — |
 | Security policy | `SECURITY.md` | — |
 | Contributing guide | `CONTRIBUTING.md` | — |
 | Code of conduct | `CODE_OF_CONDUCT.md` | — |

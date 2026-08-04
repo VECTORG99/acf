@@ -70,9 +70,15 @@ jobs:
             # Find all http(s) URLs in the file
             while IFS= read -r url; do
               [ -z "$url" ] && continue
+              # Skip localhost and 127.0.0.1 — these are local example URLs,
+              # not outbound calls to third-party services.
+              if echo "$url" | grep -qE '^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?(/|$)'; then
+                continue
+              fi
               # Allow documentation links: github.com (repo/docs), raw.githubusercontent.com,
-              # agentskills.io, and common doc hosts.
-              if echo "$url" | grep -qE '^(https?://)?(www\.)?(github\.com|raw\.githubusercontent\.com|agentskills\.io|developer\.github\.com|docs\.github\.com|spec\.agentskills\.io)'; then
+              # agentskills.io, GitHub docs, and common documentation hosts
+              # (*.github.io project docs pages).
+              if echo "$url" | grep -qE '^(https?://)?(www\.)?(github\.com|raw\.githubusercontent\.com|agentskills\.io|developer\.github\.com|docs\.github\.com|spec\.agentskills\.io|[a-z0-9-]+\.github\.io)'; then
                 continue
               fi
               echo "  ::error file=$f:: non-documentation URL found: $url"

@@ -1,0 +1,50 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Test Suite
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run full test suite
+        run: |
+          chmod +x scripts/*.sh
+          bash scripts/test-all.sh
+
+      - name: Upload benchmark results
+        if: always()
+        run: |
+          bash scripts/benchmark-compaction.sh > benchmark-results.txt 2>&1 || true
+          echo "=== Benchmark Results ==="
+          cat benchmark-results.txt
+
+      - name: Verify mirror sync
+        run: |
+          echo "Checking that skills/ and .devin/skills/ mirrors are in sync..."
+          errors=0
+          for sub in 01-context-load 02-stack-audit 03-issue-craft 04-pr-context 05-frontend-preview 06-label-metadata 07-compaction 08-caveman; do
+            if ! diff -q "skills/${sub}/SKILL.md" ".devin/skills/${sub}/SKILL.md" >/dev/null 2>&1; then
+              echo "::error::Mirror out of sync: ${sub}/SKILL.md"
+              errors=$((errors + 1))
+            fi
+          done
+          if [ "$errors" -gt 0 ]; then
+            echo "::error::$errors mirror(s) out of sync — run cp -r skills/* .devin/skills/"
+            exit 1
+          fi
+          echo "All mirrors in sync."
